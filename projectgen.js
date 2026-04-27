@@ -18,22 +18,40 @@ async function GrabProjects(){
 
 }
 
-function Write(input){
+function GenerateDetailsElement(Details){
+    let details = ``
+    if (Details?.length > 0) {
+        details += `<details>`
+
+        let importedDetails = Details;
+        for (let j = 0; j < importedDetails.length; j++) {
+
+            details += `<div class = "projectcontainer">`;
+
+            for (let i = 0; i < importedDetails[j].length; i++) {
+
+                let thisthing = importedDetails[j][i];
+                if (thisthing.includes("resources/")) {
+                    details += `<img src="${thisthing}">`;
+                } else {
+                    details += `<p>${thisthing}</p>`;
+                }
+
+            }
+            details += `<br></div>`;
+        }
 
 
-    let newhtml = '';
-    if (input.Type != 1) {
-        newhtml += ` <h3>${input.Title}</h3>`;
-    } else {
-        newhtml += `<video controls="" src="${input.Source}"></video><br>`;
+        details += `</details>`
     }
-
+    return details;
+}
+function GeneratePeriodElement(period){
     const periodPerYear = 4;
     const periodPerStudy = 16;
 
     let periodtext = `[`
-    let opleidingen = ["MBO ", "HBO ", "UNI "]
-    let period = input.Period;
+    const opleidingen = ["MBO ", "HBO ", "UNI "]
     if (period < 128 && period > 0){
         periodtext += `${opleidingen[Math.floor(period/periodPerStudy)]} `;
         periodtext += ` Year ${Math.floor(period/periodPerYear)+1}, `;
@@ -45,68 +63,68 @@ function Write(input){
     periodtext += `]`;
     periodtext = periodtext.replace("[0]", "");
 
-    newhtml += `<p class="graytext">${periodtext}</p>`;
+    return `<p class="graytext">${periodtext}</p>`;
+}
+function GenerateImageRowElement(images){
+    let output = ``;
+    if (images.length > 0) {
+        output += `<div class="row">`
+        images.forEach(image => {
+            output += `<div class="rentry">`;
+            output += `<img src="${image}">`;
+            output += `</div>`;
+        })
+        output += `</div>`
+    }
+    return output;
+}
+function GenerateEmbedElement(embed){
+    return `<div class = "embedded"><iframe loading="lazy" src="${embed}" allowtransparency="true" width="485" height="402" frameborder="0" scrolling="no" allowfullscreen=""></iframe></div>`;
+}
+function GenerateSuffixElement(suffix, links){
+    let linkIndex = 0;
+    while (suffix.includes("+link")) {
+        suffix = suffix.replace("+link", `<a href="${links[linkIndex].Url}">${links[linkIndex].Text}</a>`);
+        linkIndex++;
+    }
+    return `<p>${suffix}</p>`;
+}
+
+function Write(input){
+
+
+    let newhtml = '';
+
+
+    if (input.Type != 1) {
+        newhtml += ` <h3>${input.Title}</h3>`;
+    } else {
+        newhtml += `<video controls="" src="${input.Source}"></video><br>`;
+    }
+
+    newhtml += GeneratePeriodElement(input.Period);
     newhtml += `<p>${input.Description}</p>`;
 
 
     if (input.Type != 1) {
-        let details = ``
-        if (input.Details?.length > 0) {
-            details += `<details>`
 
-            let importedDetails = input.Details;
-            for (let j = 0; j < importedDetails.length; j++) {
-
-                details += `<div class = "projectcontainer">`;
-
-                for (let i = 0; i < importedDetails[j].length; i++) {
-
-                    let thisthing = importedDetails[j][i];
-                    if (thisthing.includes("resources/")) {
-                        details += `<img src="${thisthing}">`;
-                    } else {
-                        details += `<p>${thisthing}</p>`;
-                    }
-
-                }
-                details += `<br></div>`;
-            }
-
-
-            details += `</details>`
-        }
         if (input.Type == 2) {
-            let embed = input.Embed;
-            newhtml += `<div class = "embedded"><iframe loading="lazy" src="${embed}" allowtransparency="true" width="485" height="402" frameborder="0" scrolling="no" allowfullscreen=""></iframe></div>`;
+            newhtml += GenerateEmbedElement(input.Embed);
         } else
         {
-            let images = input.Images;
-            if (images.length > 0) {
-                newhtml += `<div class="row">`
-                images.forEach(image => {
-                    newhtml += `<div class="rentry">`;
-                    newhtml += `<img src="${image}">`;
-                    newhtml += `</div>`;
-                })
-                newhtml += `</div>`
-            }
+            newhtml += GenerateImageRowElement(input.Images)
         }
-        let suffix = input.Suffix;
-        let linkIndex = 0;
-        while (suffix.includes("+link")) {
-            suffix = suffix.replace("+link", `<a href="${input.Links[linkIndex].Url}">${input.Links[linkIndex].Text}</a>`);
-            linkIndex++;
-        }
-        newhtml += `<p>${suffix}</p>`
-        newhtml += details;
+
+        newhtml += GenerateSuffixElement(input.Suffix,input.Links)
+        newhtml += GenerateDetailsElement(input.Details);
     }
 
 
 
 
-    let name = input.Name;
+    const name = input.Name;
 
-    let edit = document.getElementsByClassName("project_" + name);
+    const edit = document.getElementsByClassName("project_" + name);
 
 
 
